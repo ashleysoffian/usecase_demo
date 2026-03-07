@@ -22,14 +22,7 @@ def labels_from_generator(generator, fallback: list[str] | tuple[str, ...] | Non
 	"""Get labels from generator."""
 	if hasattr(generator, "class_indices") and isinstance(generator.class_indices, dict):
 		inv = {v: k for k, v in generator.class_indices.items()}
-		labels = [inv[i] for i in range(len(inv))]
-		friendly = {
-			"class_0_nonagri": "non-agri",
-			"class_0_non_agri": "non-agri",
-			"class_0_non-agri": "non-agri",
-			"class_1_agri": "agri",
-		}
-		return [friendly.get(x, x) for x in labels]
+		return [inv[i] for i in range(len(inv))]
 
 	if fallback is None:
 		return ["class_0", "class_1"]
