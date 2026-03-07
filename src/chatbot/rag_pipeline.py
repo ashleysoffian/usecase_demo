@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import easyocr
+import mlflow
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
@@ -16,6 +17,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.chatbot.prompt_templates import PROMPT, SYSTEM_RULES
 from src.config import Config
+from src.mlflow_utils import configure_chatbot_mlflow
+
+
+configure_chatbot_mlflow()
 
 
 SUPPORTED_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png"}
@@ -137,6 +142,30 @@ def get_llm(*, config: PolicyQAConfig = PolicyQAConfig()):
 	return ChatOpenAI(model=config.llm_model, temperature=config.llm_temperature)
 
 
+def generate_answer(
+	question: str,
+	context: str,
+	llm: ChatOpenAI,
+	*,
+	prompt: ChatPromptTemplate = PROMPT,
+	llm_model: str,
+	retrieval_k: int,
+) -> str:
+	msg = prompt.format_messages(question=question, context=context)
+	response = llm.invoke(msg)
+	answer = str(response.content)
+
+	try:
+		with mlflow.start_run():
+			mlflow.log_param("llm_model", llm_model)
+			mlflow.log_param("retrieval_k", retrieval_k)
+			mlflow.log_metric("response_length", len(answer))
+	except Exception:
+		pass
+
+	return answer
+
+
 def load_or_build_vectordb_for_upload(
 	file_path: str | Path,
 	*,
@@ -227,16 +256,23 @@ def answer_question(
 	config: PolicyQAConfig = PolicyQAConfig(),
 	prompt: ChatPromptTemplate = PROMPT,
 ) -> dict:
-	retriever = vectordb.as_retriever(search_kwargs={"k": k or config.top_k})
+	retrieval_k = k or config.top_k
+	retriever = vectordb.as_retriever(search_kwargs={"k": retrieval_k})
 	docs = retriever.invoke(question)
 
 	llm = get_llm(config=config)
 	context = format_context(docs)
-	msg = prompt.format_messages(question=question, context=context)
-	resp = llm.invoke(msg)
+	answer = generate_answer(
+		question,
+		context,
+		llm,
+		prompt=prompt,
+		llm_model=config.llm_model,
+		retrieval_k=retrieval_k,
+	)
 
 	return {
-		"answer": resp.content,
+		"answer": answer,
 		"sources": docs,
 	}
 

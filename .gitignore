@@ -209,3 +209,4 @@ __marimo__/
 # New directories to ignore
 *chroma_store/
 *data/
+*mlruns/
