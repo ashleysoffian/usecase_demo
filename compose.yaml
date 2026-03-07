@@ -1,0 +1,38 @@
+services:
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: usecase-demo:latest
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MLFLOW_TRACKING_URI: sqlite:////workspace/artifacts/mlruns/mlflow.db
+      PYTHONUNBUFFERED: "1"
+    command: >
+      python -m streamlit run streamlit/app.py
+      --server.address=0.0.0.0 --server.port=5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mlflow
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: usecase-demo:latest
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:////workspace/artifacts/mlruns/mlflow.db
+      --default-artifact-root /workspace/artifacts/mlruns
+      --host 0.0.0.0
+      --port 5001
+    ports:
+      - "5001:5001"

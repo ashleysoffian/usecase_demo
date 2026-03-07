@@ -28,7 +28,7 @@ class Config:
     BEST_REG_PIPE_FILE = "best_reg_pipe.joblib"
     BEST_CLASSIFICATION_PIPE_FILE = "best_classification_pipe.joblib"
     REGRESSION_MODEL_FILE = "regression_model.pkl"
-    DL_MODEL_FILE = "deeplearning_model.pt"
+    DL_MODEL_FILE = "deeplearning_model.keras"
 
     # Streamlit App Config
-    STREAMLIT_PORT = 8501
+    STREAMLIT_PORT = 5000
