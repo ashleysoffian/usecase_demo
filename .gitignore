@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# New directories to ignore
+*chroma_store/
+*data/
+*mlruns/
+*models/
