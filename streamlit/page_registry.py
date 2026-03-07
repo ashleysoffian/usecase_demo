@@ -14,7 +14,7 @@ from typing import Optional
 # - `default=True` should only be set for ONE enabled page.
 
 
-APP_TITLE = "Usecase Demo"
+APP_TITLE = "Usecase Demo - Ashley"
 DEFAULT_LAYOUT = "wide"
 
 
@@ -29,8 +29,17 @@ class PageSpec:
 
 
 PAGE_SPECS: list[PageSpec] = [
-	PageSpec(script="pages/00_home.py", title="Home", url_path="home", default=True),
-	PageSpec(script="pages/01_architecture.py", title="Architecture", url_path="architecture"),
+	PageSpec(
+		script="pages/00_home.py", 
+		title="Home", 
+		url_path="home", 
+		default=True
+	),
+	PageSpec(
+		script="pages/01_architecture.py", 
+		title="Architecture", 
+		url_path="architecture"
+    ),
 	PageSpec(
 		script="pages/02_regression_dashboard.py",
 		title="Regression Dashboard",
@@ -41,8 +50,16 @@ PAGE_SPECS: list[PageSpec] = [
 		title="Deep Learning Dashboard",
 		url_path="deeplearning-dashboard",
 	),
-	PageSpec(script="pages/04_chatbot.py", title="Chatbot", url_path="chatbot"),
-	PageSpec(script="pages/05_mlflow_tracking.py", title="MLflow Tracking", url_path="mlflow-tracking"),
+	PageSpec(
+		script="pages/04_chatbot.py", 
+		title="Chatbot", 
+		url_path="chatbot"
+	),
+	PageSpec(
+		script="pages/05_mlflow_tracking.py", 
+		title="MLflow Tracking", 
+		url_path="mlflow-tracking"
+	),
 ]
 
 

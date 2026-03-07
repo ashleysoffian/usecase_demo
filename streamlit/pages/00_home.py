@@ -15,7 +15,7 @@ from src.utils import bootstrap_streamlit
 bootstrap_streamlit(__file__)
 
 
-st.title("Usecase Demo")
+st.title("Usecase Demo - Ashley Soffian")
 st.caption("Use the sidebar to navigate between pages.")
 
 st.markdown(
