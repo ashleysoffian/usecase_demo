@@ -25,12 +25,7 @@ from sklearn.metrics import (
 	roc_auc_score,
 	RocCurveDisplay,
 )
-
-
-try:
-	import xgboost  # type: ignore[import-not-found]
-except Exception:  # pragma: no cover
-	xgboost = None  # type: ignore[assignment]
+import xgboost
 
 
 RegressionScoring = Literal[
@@ -122,13 +117,7 @@ class Model_Training:
 
 	@staticmethod
 	def _get_xgboost_regressor(*, random_state: int):
-		try:
-			from xgboost import XGBRegressor  # type: ignore[import-not-found]
-		except Exception as exc:  # pragma: no cover
-			raise ImportError(
-				"XGBoost is required for XGBRegressor. Install with `pip install xgboost`."
-			) from exc
-		return XGBRegressor(
+		return xgboost.XGBRegressor(
 			random_state=random_state,
 			objective="reg:squarederror",
 			n_jobs=-1,
@@ -136,13 +125,7 @@ class Model_Training:
 
 	@staticmethod
 	def _get_xgboost_classifier(*, random_state: int):
-		try:
-			from xgboost import XGBClassifier  # type: ignore[import-not-found]
-		except Exception as exc:  # pragma: no cover
-			raise ImportError(
-				"XGBoost is required for XGBClassifier. Install with `pip install xgboost`."
-			) from exc
-		return XGBClassifier(
+		return xgboost.XGBClassifier(
 			random_state=random_state,
 			eval_metric="logloss",
 			n_jobs=-1,
@@ -601,11 +584,8 @@ class ModelTrainer:
 			raise ValueError("y_true and y_pred must have the same shape")
 
 		if use_plotly:
-			try:
-				import plotly.express as px
-				import plotly.graph_objects as go
-			except Exception as exc:  # pragma: no cover
-				raise ImportError("Plotly is required for interactive plots. Install with `pip install plotly`.") from exc
+			import plotly.express as px
+			import plotly.graph_objects as go
 
 			# Create DataFrame for Plotly
 			plot_df = pd.DataFrame({
@@ -641,10 +621,7 @@ class ModelTrainer:
 			return fig
 
 		else:
-			try:
-				import matplotlib.pyplot as plt
-			except Exception as exc:  # pragma: no cover
-				raise ImportError("Matplotlib is required for static plots. Install with `pip install matplotlib`.") from exc
+			import matplotlib.pyplot as plt
 
 			fig, ax = plt.subplots(figsize=(8, 6))
 			ax.scatter(y_true_arr, y_pred_arr, alpha=0.5, edgecolors='k', linewidth=0.5)
@@ -711,11 +688,8 @@ class ModelTrainer:
 		n_models = len(results)
 
 		if use_plotly:
-			try:
-				from plotly.subplots import make_subplots
-				import plotly.graph_objects as go
-			except Exception as exc:  # pragma: no cover
-				raise ImportError("Plotly is required for interactive plots. Install with `pip install plotly`.") from exc
+			from plotly.subplots import make_subplots
+			import plotly.graph_objects as go
 
 			# Create subplots
 			fig = make_subplots(
@@ -779,10 +753,7 @@ class ModelTrainer:
 			return fig
 
 		else:
-			try:
-				import matplotlib.pyplot as plt
-			except Exception as exc:  # pragma: no cover
-				raise ImportError("Matplotlib is required for static plots. Install with `pip install matplotlib`.") from exc
+			import matplotlib.pyplot as plt
 
 			fig, axes = plt.subplots(1, n_models, figsize=figsize)
 			if n_models == 1:
@@ -1087,10 +1058,7 @@ class ModelTrainer:
 		figsize: tuple[float, float] | None = None,
 	):
 		"""Render a metrics DataFrame as a matplotlib table figure."""
-		try:
-			import matplotlib.pyplot as plt
-		except Exception as exc:  # pragma: no cover
-			raise ImportError("Plotting requires matplotlib.") from exc
+		import matplotlib.pyplot as plt
 
 		if not isinstance(metrics, pd.DataFrame):
 			raise TypeError("metrics must be a pandas DataFrame")
@@ -1141,10 +1109,7 @@ class ModelTrainer:
 		title: str = "ROC Curve",
 	):
 		"""Plot ROC curve (binary classification only)."""
-		try:
-			import matplotlib.pyplot as plt
-		except Exception as exc:  # pragma: no cover
-			raise ImportError("Plotting requires matplotlib.") from exc
+		import matplotlib.pyplot as plt
 
 		estimator = ModelTrainer._unwrap_estimator(estimator)
 		if not hasattr(estimator, "predict"):
@@ -1186,10 +1151,7 @@ class ModelTrainer:
 		Returns:
 			Matplotlib Figure.
 		"""
-		try:
-			import matplotlib.pyplot as plt
-		except Exception as exc:  # pragma: no cover
-			raise ImportError("Plotting requires matplotlib.") from exc
+		import matplotlib.pyplot as plt
 
 		estimator = ModelTrainer._unwrap_estimator(estimator)
 		if not hasattr(estimator, "predict"):
@@ -1305,10 +1267,7 @@ class ModelTrainer:
 		Returns:
 			Matplotlib Figure.
 		"""
-		try:
-			import matplotlib.pyplot as plt
-		except Exception as exc:  # pragma: no cover
-			raise ImportError("Plotting requires matplotlib.") from exc
+		import matplotlib.pyplot as plt
 
 		models = ModelTrainer._as_estimator_dict(models)
 		y_arr = np.asarray(y)
@@ -1375,10 +1334,7 @@ class ModelTrainer:
 		Returns:
 			Matplotlib Figure.
 		"""
-		try:
-			import matplotlib.pyplot as plt
-		except Exception as exc:  # pragma: no cover
-			raise ImportError("Plotting requires matplotlib.") from exc
+		import matplotlib.pyplot as plt
 
 		models = ModelTrainer._as_estimator_dict(models)
 		items = list(models.items())
