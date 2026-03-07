@@ -21,12 +21,7 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
-
-try:  # optional
-	import xgboost  # type: ignore[import-not-found]
-except Exception:  # pragma: no cover
-	xgboost = None  # type: ignore[assignment]
+import xgboost
 
 
 TaskType = Literal["regression", "classification"]
@@ -427,13 +422,8 @@ class ModelPipeline:
 			title = "Actual vs Predicted - All Models"
 
 		if use_plotly:
-			try:
-				from plotly.subplots import make_subplots
-				import plotly.graph_objects as go
-			except Exception as exc:  # pragma: no cover
-				raise ImportError(
-					"Plotly is required for interactive plots. Install with `pip install plotly`."
-				) from exc
+			from plotly.subplots import make_subplots
+			import plotly.graph_objects as go
 
 			fig = make_subplots(
 				rows=1,
@@ -483,12 +473,7 @@ class ModelPipeline:
 			)
 			return fig
 
-		try:
-			import matplotlib.pyplot as plt
-		except Exception as exc:  # pragma: no cover
-			raise ImportError(
-				"Matplotlib is required for static plots. Install with `pip install matplotlib`."
-			) from exc
+		import matplotlib.pyplot as plt
 
 		fig, axes = plt.subplots(1, n_models, figsize=figsize)
 		if n_models == 1:
@@ -980,8 +965,6 @@ class ModelPipeline:
 			if model_type == "random_forest":
 				return RandomForestRegressor(random_state=model_kwargs.pop("random_state", 42), **model_kwargs)
 			if model_type == "xgboost":
-				if xgboost is None:
-					raise ImportError("xgboost is not installed. Run: pip install xgboost")
 				return xgboost.XGBRegressor(
 					random_state=model_kwargs.pop("random_state", 42),
 					n_jobs=model_kwargs.pop("n_jobs", -1),
@@ -995,8 +978,6 @@ class ModelPipeline:
 			if model_type == "random_forest":
 				return RandomForestClassifier(random_state=model_kwargs.pop("random_state", 42), **model_kwargs)
 			if model_type == "xgboost":
-				if xgboost is None:
-					raise ImportError("xgboost is not installed. Run: pip install xgboost")
 				return xgboost.XGBClassifier(
 					random_state=model_kwargs.pop("random_state", 42),
 					n_jobs=model_kwargs.pop("n_jobs", -1),

@@ -137,12 +137,7 @@ class Feature_Engineering:
                     f"KNN imputation requires numeric columns; non-numeric: {non_numeric}"
                 )
 
-            try:
-                from sklearn.impute import KNNImputer
-            except Exception as exc:  # pragma: no cover
-                raise ImportError(
-                    "KNN imputation requires scikit-learn (sklearn). Install it first."
-                ) from exc
+            from sklearn.impute import KNNImputer
 
             # KNNImputer works on a numeric matrix; keep column alignment.
             original_dtypes = {c: out[c].dtype for c in target_cols}
@@ -251,11 +246,8 @@ class Feature_Engineering:
         Returns:
             Matplotlib Figure (single plot) or list of Figures (multiple, non-combined).
         """
-        try:
-            import matplotlib.pyplot as plt
-            from matplotlib.lines import Line2D
-        except Exception as exc:  # pragma: no cover
-            raise ImportError("Plotting requires matplotlib.") from exc
+        import matplotlib.pyplot as plt
+        from matplotlib.lines import Line2D
 
         if not isinstance(before_df, pd.DataFrame) or not isinstance(after_df, pd.DataFrame):
             raise TypeError("before_df and after_df must be pandas DataFrames")
@@ -420,10 +412,7 @@ class Feature_Engineering:
         Returns:
             Matplotlib Figure (single plot) or list of Figures (multiple, non-combined).
         """
-        try:
-            import matplotlib.pyplot as plt
-        except Exception as exc:  # pragma: no cover
-            raise ImportError("Plotting requires matplotlib.") from exc
+        import matplotlib.pyplot as plt
 
         if not isinstance(before_df, pd.DataFrame) or not isinstance(after_df, pd.DataFrame):
             raise TypeError("before_df and after_df must be pandas DataFrames")

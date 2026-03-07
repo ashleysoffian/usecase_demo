@@ -210,3 +210,4 @@ __marimo__/
 *chroma_store/
 *data/
 *mlruns/
+models/
