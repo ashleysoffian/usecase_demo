@@ -181,7 +181,7 @@ def run_streamlit_app(
 
 	cols = st.columns([1, 1])
 	with cols[0]:
-		index_clicked = st.button("Index", type="primary")
+		index_clicked = st.button("Submit", type="primary")
 	with cols[1]:
 		clear_clicked = st.button("Clear")
 
