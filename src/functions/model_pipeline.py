@@ -849,7 +849,6 @@ class ModelPipeline:
 		if task == "classification" and model_type == "logistic":
 			return {
 				f"{prefix}C": [0.01, 0.1, 1.0, 10.0],
-				f"{prefix}penalty": ["l2"],
 				f"{prefix}solver": ["lbfgs"],
 				f"{prefix}class_weight": [None, "balanced"],
 				f"{prefix}max_iter": [1000],

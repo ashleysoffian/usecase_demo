@@ -69,6 +69,7 @@ class RegressionPipelineConfig:
 	verbose: int = 0
 	log_to_mlflow: bool = True
 	run_name: str | None = None
+	show_checkpoints: bool = True
 
 
 def feature_columns(config: RegressionPipelineConfig | None = None) -> list[str]:
