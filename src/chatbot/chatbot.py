@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -26,6 +27,8 @@ def ui_summarize(
 	config: PolicyQAConfig = PolicyQAConfig(),
 ) -> str:
 	"""Generate a summary of the uploaded file using retrieved context."""
+	started_at = time.perf_counter()
+	_ui_checkpoint(config, "Summarization requested", started_at=started_at)
 
 	if not uploaded_doc_id:
 		return "Please upload a file and click **Index** first."
@@ -53,6 +56,7 @@ def ui_summarize(
 		k=max(config.top_k, 12),
 		config=config,
 	)
+	_ui_checkpoint(config, "Summarization completed", started_at=started_at)
 	return out["answer"]
 
 
@@ -63,6 +67,8 @@ def ui_index_uploaded(
 	config: PolicyQAConfig = PolicyQAConfig(),
 ) -> tuple[str, str, str]:
 	"""Index uploaded file (PDF or image) and return (status, doc_id, summary)."""
+	started_at = time.perf_counter()
+	_ui_checkpoint(config, "Index request received", started_at=started_at)
 
 	if not file_path:
 		return "Please upload a file first.", "", ""
@@ -74,6 +80,7 @@ def ui_index_uploaded(
 		doc_id, _ = load_or_build_vectordb_for_upload(
 			path, persist_base=persist_base, config=config
 		)
+		_ui_checkpoint(config, f"Indexing completed for {path.name}", started_at=started_at)
 	except (ValueError, RuntimeError) as e:
 		return str(e), "", ""
 
@@ -85,6 +92,7 @@ def ui_index_uploaded(
 			persist_base=persist_base,
 			config=config,
 		)
+		_ui_checkpoint(config, "Summary generation completed", started_at=started_at)
 	except Exception as e:
 		summary = f"Summary failed: {e}"
 
@@ -99,6 +107,8 @@ def ui_answer(
 	persist_base: Optional[Path] = None,
 	config: PolicyQAConfig = PolicyQAConfig(),
 ) -> str:
+	started_at = time.perf_counter()
+	_ui_checkpoint(config, "Q&A request received", started_at=started_at)
 	question = (question or "").strip()
 	if not question:
 		return "Please enter a question."
@@ -127,6 +137,7 @@ def ui_answer(
 		)
 
 	out = answer_question(vectordb, question, config=config)
+	_ui_checkpoint(config, "Q&A response completed", started_at=started_at)
 	return out["answer"]
 
 
@@ -242,6 +253,16 @@ def _require_openai_api_key() -> None:
 		raise RuntimeError(
 			"Missing OPENAI_API_KEY env var. Set it (and restart your shell/kernel) before running."
 		)
+
+
+def _ui_checkpoint(config: PolicyQAConfig, message: str, *, started_at: float | None = None) -> None:
+	if not config.show_checkpoints:
+		return
+	if started_at is None:
+		elapsed = 0.0
+	else:
+		elapsed = time.perf_counter() - started_at
+	print(f"[chatbot-ui][{elapsed:7.1f}s] {message}", flush=True)
 
 
 def main() -> int:

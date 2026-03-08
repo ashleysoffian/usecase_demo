@@ -46,17 +46,22 @@ PAGE_SPECS: list[PageSpec] = [
 		url_path="regression-dashboard",
 	),
 	PageSpec(
-		script="pages/03_deeplearning_dashboard.py",
+		script="pages/03_classification_dashboard.py",
+		title="Classification Dashboard",
+		url_path="classification-dashboard",
+	),
+	PageSpec(
+		script="pages/04_deeplearning_dashboard.py",
 		title="Deep Learning Dashboard",
 		url_path="deeplearning-dashboard",
 	),
 	PageSpec(
-		script="pages/04_chatbot.py", 
+		script="pages/05_chatbot.py", 
 		title="Chatbot", 
 		url_path="chatbot"
 	),
 	PageSpec(
-		script="pages/05_mlflow_tracking.py", 
+		script="pages/06_mlflow_tracking.py", 
 		title="MLflow Tracking", 
 		url_path="mlflow-tracking"
 	),

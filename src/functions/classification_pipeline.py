@@ -8,10 +8,9 @@ import numpy as np
 import pandas as pd
 
 from sklearn.base import BaseEstimator, TransformerMixin
-
-from functions.feature_eng import Feature_Engineering as FE
-from functions.model import ModelTrainer as MT
-from functions.model_pipeline import ModelPipeline
+from src.functions.feature_eng import Feature_Engineering as FE
+from src.functions.model import ModelTrainer as MT
+from src.functions.model_pipeline import ModelPipeline
 
 
 ScalerType = Literal["standard", "minmax", "robust", "none"]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
@@ -36,6 +37,17 @@ class PolicyQAConfig:
 	llm_model: str = "gpt-4o-mini"
 	emb_model: str = "text-embedding-3-small"
 	llm_temperature: float = 0.2
+	show_checkpoints: bool = True
+
+
+def _checkpoint(config: PolicyQAConfig, message: str, *, started_at: float | None = None) -> None:
+	if not config.show_checkpoints:
+		return
+	if started_at is None:
+		elapsed = 0.0
+	else:
+		elapsed = time.perf_counter() - started_at
+	print(f"[chatbot-rag][{elapsed:7.1f}s] {message}", flush=True)
 
 def default_persist_base() -> Path:
 	"""Choose a stable default persist directory for Chroma."""
@@ -174,6 +186,8 @@ def load_or_build_vectordb_for_upload(
 	config: PolicyQAConfig = PolicyQAConfig(),
 ) -> tuple[str, Chroma]:
 	"""Index an uploaded PDF/image and return (doc_id, vectordb)."""
+	started_at = time.perf_counter()
+	_checkpoint(config, "Start upload indexing", started_at=started_at)
 
 	file_path = Path(file_path)
 	if doc_id is None:
@@ -185,20 +199,28 @@ def load_or_build_vectordb_for_upload(
 
 	# If directory exists and looks non-empty, load it
 	if any(pdir.iterdir()):
+		_checkpoint(config, f"Using cached vector store: {pdir}", started_at=started_at)
 		vectordb = Chroma(persist_directory=str(pdir), embedding_function=embeddings)
 		return doc_id, vectordb
 
+	_checkpoint(config, f"Loading file: {file_path.name}", started_at=started_at)
 	docs = load_uploaded_file(file_path)
+	_checkpoint(config, f"Loaded {len(docs)} document(s)", started_at=started_at)
+	_checkpoint(config, "Splitting into chunks", started_at=started_at)
 	chunks = split_docs(docs, chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap)
+	_checkpoint(config, f"Generated {len(chunks)} chunk(s)", started_at=started_at)
+	_checkpoint(config, "Building Chroma vector store", started_at=started_at)
 	vectordb = Chroma.from_documents(
 		documents=chunks,
 		embedding=embeddings,
 		persist_directory=str(pdir),
 	)
 	try:
+		_checkpoint(config, "Persisting vector store", started_at=started_at)
 		vectordb.persist()
 	except Exception:
 		pass
+	_checkpoint(config, "Upload indexing complete", started_at=started_at)
 	return doc_id, vectordb
 
 
@@ -209,6 +231,8 @@ def load_or_build_vectordb(
 	persist_base: Optional[Path] = None,
 	config: PolicyQAConfig = PolicyQAConfig(),
 ) -> tuple[str, Chroma]:
+	started_at = time.perf_counter()
+	_checkpoint(config, "Start PDF indexing", started_at=started_at)
 	pdf_path = Path(pdf_path)
 	if doc_id is None:
 		doc_id = sha256_file(pdf_path)
@@ -219,12 +243,18 @@ def load_or_build_vectordb(
 
 	# If directory exists and looks non-empty, load it
 	if any(pdir.iterdir()):
+		_checkpoint(config, f"Using cached vector store: {pdir}", started_at=started_at)
 		vectordb = Chroma(persist_directory=str(pdir), embedding_function=embeddings)
 		return doc_id, vectordb
 
 	# Otherwise build it
+	_checkpoint(config, f"Loading PDF: {pdf_path.name}", started_at=started_at)
 	docs = load_pdf(pdf_path)
+	_checkpoint(config, f"Loaded {len(docs)} page document(s)", started_at=started_at)
+	_checkpoint(config, "Splitting into chunks", started_at=started_at)
 	chunks = split_docs(docs, chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap)
+	_checkpoint(config, f"Generated {len(chunks)} chunk(s)", started_at=started_at)
+	_checkpoint(config, "Building Chroma vector store", started_at=started_at)
 	vectordb = Chroma.from_documents(
 		documents=chunks,
 		embedding=embeddings,
@@ -232,9 +262,11 @@ def load_or_build_vectordb(
 	)
 	# Persist for older Chroma interfaces
 	try:
+		_checkpoint(config, "Persisting vector store", started_at=started_at)
 		vectordb.persist()
 	except Exception:
 		pass
+	_checkpoint(config, "PDF indexing complete", started_at=started_at)
 	return doc_id, vectordb
 
 
@@ -256,10 +288,14 @@ def answer_question(
 	config: PolicyQAConfig = PolicyQAConfig(),
 	prompt: ChatPromptTemplate = PROMPT,
 ) -> dict:
+	started_at = time.perf_counter()
 	retrieval_k = k or config.top_k
+	_checkpoint(config, f"Retrieving top-{retrieval_k} context chunks", started_at=started_at)
 	retriever = vectordb.as_retriever(search_kwargs={"k": retrieval_k})
 	docs = retriever.invoke(question)
+	_checkpoint(config, f"Retrieved {len(docs)} chunk(s)", started_at=started_at)
 
+	_checkpoint(config, f"Generating response via {config.llm_model}", started_at=started_at)
 	llm = get_llm(config=config)
 	context = format_context(docs)
 	answer = generate_answer(
@@ -270,6 +306,7 @@ def answer_question(
 		llm_model=config.llm_model,
 		retrieval_k=retrieval_k,
 	)
+	_checkpoint(config, "Answer generation complete", started_at=started_at)
 
 	return {
 		"answer": answer,

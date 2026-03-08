@@ -84,7 +84,6 @@ class Model_Training:
 	CLASSIFICATION_PARAM_GRIDS: dict[str, dict[str, list[Any]]] = {
 		"logistic_regression": {
 			"C": [0.01, 0.1, 1.0, 10.0],
-			"penalty": ["l2"],
 			"solver": ["lbfgs"],
 			"class_weight": [None, "balanced"],
 			"max_iter": [1000],
